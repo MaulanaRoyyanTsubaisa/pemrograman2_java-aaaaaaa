@@ -1,0 +1,16 @@
+# Hasil kompilasi
+build/
+*.class
+
+# File sementara Office
+~$*
+
+# IDE
+.idea/
+*.iml
+nbproject/private/
+.vscode/
+
+# Sistem operasi
+Thumbs.db
+.DS_Store
