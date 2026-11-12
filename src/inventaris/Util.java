@@ -69,16 +69,29 @@ public final class Util {
         }
     }
 
+    /**
+     * Mode pengujian otomatis: dialog tidak ditampilkan, pesan terakhir disimpan
+     * di {@link #pesanTerakhir} dan konfirmasi dianggap "Ya".
+     */
+    public static boolean modeOtomatis = false;
+    public static String pesanTerakhir = "";
+
     public static void info(Component parent, String pesan) {
-        JOptionPane.showMessageDialog(parent, pesan, "Informasi", JOptionPane.INFORMATION_MESSAGE);
+        pesanTerakhir = pesan;
+        if (!modeOtomatis) {
+            JOptionPane.showMessageDialog(parent, pesan, "Informasi", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public static void error(Component parent, Exception e) {
-        JOptionPane.showMessageDialog(parent, e.getMessage(), "Terjadi Kesalahan", JOptionPane.ERROR_MESSAGE);
+        pesanTerakhir = e.getMessage();
+        if (!modeOtomatis) {
+            JOptionPane.showMessageDialog(parent, e.getMessage(), "Terjadi Kesalahan", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public static boolean konfirmasi(Component parent, String pesan) {
-        return JOptionPane.showConfirmDialog(parent, pesan, "Konfirmasi",
+        return modeOtomatis || JOptionPane.showConfirmDialog(parent, pesan, "Konfirmasi",
                 JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
     }
 }

@@ -2,6 +2,7 @@ package inventaris;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -37,7 +38,7 @@ public class FormBarang extends FormDasar {
                 + "FROM barang b JOIN kategori k ON k.id_kategori = b.id_kategori ORDER BY b.id_barang");
     }
 
-    private void isiParameter(PreparedStatement ps) throws Exception {
+    private BigDecimal isiParameter(PreparedStatement ps) throws Exception {
         String nama = txtNama.getText().trim();
         if (nama.isEmpty()) {
             throw new IllegalArgumentException("Nama barang wajib diisi.");
@@ -59,6 +60,7 @@ public class FormBarang extends FormDasar {
         ps.setInt(2, kategori.id);
         ps.setInt(3, (Integer) spnStok.getValue());
         ps.setBigDecimal(4, harga);
+        return harga;
     }
 
     @Override
@@ -74,13 +76,41 @@ public class FormBarang extends FormDasar {
     @Override
     protected void ubah() throws Exception {
         wajibPilih();
-        try (PreparedStatement ps = Koneksi.getKoneksi().prepareStatement(
-                "UPDATE barang SET nama_barang = ?, id_kategori = ?, stok = ?, harga = ? WHERE id_barang = ?")) {
-            isiParameter(ps);
-            ps.setInt(5, idTerpilih());
-            ps.executeUpdate();
-        }
-        Util.info(this, "Barang berhasil diubah.");
+        int id = idTerpilih();
+        final boolean[] hargaBerubah = new boolean[1];
+        Stok.transaksi(c -> {
+            BigDecimal hargaLama;
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT harga FROM barang WHERE id_barang = ? FOR UPDATE")) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    hargaLama = rs.getBigDecimal(1);
+                }
+            }
+            BigDecimal hargaBaru;
+            try (PreparedStatement ps = c.prepareStatement(
+                    "UPDATE barang SET nama_barang = ?, id_kategori = ?, stok = ?, harga = ? WHERE id_barang = ?")) {
+                hargaBaru = isiParameter(ps);
+                ps.setInt(5, id);
+                ps.executeUpdate();
+            }
+            // perbaikan Pertemuan 12: setiap perubahan harga dicatat ke riwayat_harga
+            if (hargaLama.compareTo(hargaBaru) != 0) {
+                hargaBerubah[0] = true;
+                try (PreparedStatement ps = c.prepareStatement(
+                        "INSERT INTO riwayat_harga (id_barang, id_user, harga_lama, harga_baru) VALUES (?, ?, ?, ?)")) {
+                    ps.setInt(1, id);
+                    ps.setInt(2, Sesi.getIdUser());
+                    ps.setBigDecimal(3, hargaLama);
+                    ps.setBigDecimal(4, hargaBaru);
+                    ps.executeUpdate();
+                }
+            }
+        });
+        Util.info(this, hargaBerubah[0]
+                ? "Barang berhasil diubah. Perubahan harga dicatat di riwayat harga."
+                : "Barang berhasil diubah.");
     }
 
     @Override

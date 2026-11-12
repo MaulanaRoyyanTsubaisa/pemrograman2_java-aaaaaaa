@@ -19,7 +19,7 @@ public class FormBarangMasuk extends FormDasar {
 
     public FormBarangMasuk() {
         super("Transaksi Barang Masuk",
-                new String[]{"ID", "Tanggal", "ID Barang", "Barang", "ID Supplier", "Supplier", "Jumlah"});
+                new String[]{"ID", "Tanggal", "ID Barang", "Barang", "ID Supplier", "Supplier", "Jumlah", "Petugas"});
         tambahInput("Tanggal (yyyy-mm-dd)", txtTanggal);
         tambahInput("Barang", cmbBarang);
         tambahInput("Supplier", cmbSupplier);
@@ -39,10 +39,11 @@ public class FormBarangMasuk extends FormDasar {
     protected void muatData() throws Exception {
         Util.isiTabel(model,
                 "SELECT m.id_masuk, m.tanggal_masuk, m.id_barang, b.nama_barang, "
-                + "m.id_supplier, s.nama_supplier, m.jumlah "
+                + "m.id_supplier, s.nama_supplier, m.jumlah, u.nama_user "
                 + "FROM barang_masuk m "
                 + "JOIN barang b ON b.id_barang = m.id_barang "
                 + "JOIN supplier s ON s.id_supplier = m.id_supplier "
+                + "JOIN `user` u ON u.id_user = m.id_user "
                 + "ORDER BY m.tanggal_masuk DESC, m.id_masuk DESC");
     }
 
@@ -70,11 +71,12 @@ public class FormBarangMasuk extends FormDasar {
         Date tgl = tanggal();
         Stok.transaksi(c -> {
             try (PreparedStatement ps = c.prepareStatement(
-                    "INSERT INTO barang_masuk (id_barang, id_supplier, tanggal_masuk, jumlah) VALUES (?, ?, ?, ?)")) {
+                    "INSERT INTO barang_masuk (id_barang, id_supplier, id_user, tanggal_masuk, jumlah) VALUES (?, ?, ?, ?, ?)")) {
                 ps.setInt(1, idBarang);
                 ps.setInt(2, idSupplier);
-                ps.setDate(3, tgl);
-                ps.setInt(4, jumlah);
+                ps.setInt(3, Sesi.getIdUser());   // petugas yang mencatat
+                ps.setDate(4, tgl);
+                ps.setInt(5, jumlah);
                 ps.executeUpdate();
             }
             Stok.ubah(c, idBarang, +jumlah);

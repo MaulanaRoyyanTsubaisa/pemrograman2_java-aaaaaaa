@@ -18,7 +18,7 @@ public class FormBarangKeluar extends FormDasar {
 
     public FormBarangKeluar() {
         super("Transaksi Barang Keluar",
-                new String[]{"ID", "Tanggal", "ID Barang", "Barang", "Jumlah"});
+                new String[]{"ID", "Tanggal", "ID Barang", "Barang", "Jumlah", "Petugas"});
         tambahInput("Tanggal (yyyy-mm-dd)", txtTanggal);
         tambahInput("Barang", cmbBarang);
         tambahInput("Jumlah", spnJumlah);
@@ -35,8 +35,9 @@ public class FormBarangKeluar extends FormDasar {
     @Override
     protected void muatData() throws Exception {
         Util.isiTabel(model,
-                "SELECT k.id_keluar, k.tanggal_keluar, k.id_barang, b.nama_barang, k.jumlah "
+                "SELECT k.id_keluar, k.tanggal_keluar, k.id_barang, b.nama_barang, k.jumlah, u.nama_user "
                 + "FROM barang_keluar k JOIN barang b ON b.id_barang = k.id_barang "
+                + "JOIN `user` u ON u.id_user = k.id_user "
                 + "ORDER BY k.tanggal_keluar DESC, k.id_keluar DESC");
     }
 
@@ -64,10 +65,11 @@ public class FormBarangKeluar extends FormDasar {
         Stok.transaksi(c -> {
             Stok.ubah(c, idBarang, -jumlah);   // gagal bila stok tidak cukup
             try (PreparedStatement ps = c.prepareStatement(
-                    "INSERT INTO barang_keluar (id_barang, tanggal_keluar, jumlah) VALUES (?, ?, ?)")) {
+                    "INSERT INTO barang_keluar (id_barang, id_user, tanggal_keluar, jumlah) VALUES (?, ?, ?, ?)")) {
                 ps.setInt(1, idBarang);
-                ps.setDate(2, tgl);
-                ps.setInt(3, jumlah);
+                ps.setInt(2, Sesi.getIdUser());   // petugas yang mencatat
+                ps.setDate(3, tgl);
+                ps.setInt(4, jumlah);
                 ps.executeUpdate();
             }
         });

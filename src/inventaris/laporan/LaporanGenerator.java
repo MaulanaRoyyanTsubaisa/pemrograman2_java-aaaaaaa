@@ -38,6 +38,7 @@ public class LaporanGenerator {
     private static final DateTimeFormatter FMT_TANGGAL = DateTimeFormatter.ofPattern("d MMMM yyyy", ID);
     private static final DateTimeFormatter FMT_CETAK =
             DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy 'pukul' HH.mm 'WIB'", ID);
+    private static final DateTimeFormatter FMT_WAKTU = DateTimeFormatter.ofPattern("d MMMM yyyy, HH.mm", ID);
     private static final DateTimeFormatter FMT_FILE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final Path folderOutput;
@@ -220,6 +221,11 @@ public class LaporanGenerator {
                         ? ((java.sql.Date) nilai).toLocalDate()
                         : nilai instanceof LocalDate ? (LocalDate) nilai : LocalDate.parse(nilai.toString());
                 return FMT_TANGGAL.format(tgl);
+            }
+            case WAKTU: {
+                LocalDateTime w = nilai instanceof java.sql.Timestamp
+                        ? ((java.sql.Timestamp) nilai).toLocalDateTime() : (LocalDateTime) nilai;
+                return FMT_WAKTU.format(w);
             }
             default:
                 return esc(nilai.toString());

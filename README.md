@@ -31,7 +31,9 @@ Tugas Mata Kuliah **Pemrograman II**: Pertemuan 11 s.d. 15
 | | Fitur | Keterangan |
 |---|---|---|
 | 🔌 | **Koneksi JDBC** | Satu class `Koneksi` untuk seluruh aplikasi, jadi pengaturan database cukup di satu tempat |
-| 📝 | **CRUD 5 tabel** | Kategori, Supplier, Barang, Barang Masuk, Barang Keluar (tambah, lihat, ubah, hapus) |
+| 📝 | **CRUD 7 tabel** | Kategori, Supplier, Barang, Pengguna, Barang Masuk, Barang Keluar, Riwayat Harga |
+| 👤 | **Pengguna & petugas** | Pilih akun saat aplikasi dibuka, setiap transaksi otomatis mencatat petugasnya. Tab Pengguna khusus admin |
+| 🕘 | **Riwayat harga** | Setiap harga barang diubah, harga lama/baru, waktu, dan pengubahnya tercatat otomatis |
 | 📈 | **Stok otomatis** | Barang masuk menambah stok, barang keluar mengurangi stok. Ubah/hapus transaksi ikut menyesuaikan stok |
 | 🛡️ | **Data aman** | Transaksi database `commit`/`rollback`, stok tidak bisa minus, data yang masih dipakai tidak bisa dihapus (foreign key) |
 | 🖨️ | **Cetak Laporan** | Data diambil langsung dari MySQL, disusun menjadi laporan HTML + CSS, lalu dicetak lewat browser |
@@ -46,19 +48,20 @@ Tugas Mata Kuliah **Pemrograman II**: Pertemuan 11 s.d. 15
 <table>
   <tr>
     <td align="center"><img src="dokumentasi/screenshot/app_3_barang.png" alt="Form data barang"><br><sub><b>Form CRUD Barang</b></sub></td>
-    <td align="center"><img src="dokumentasi/screenshot/app_4_barang_masuk.png" alt="Form barang masuk"><br><sub><b>Transaksi Barang Masuk</b></sub></td>
+    <td align="center"><img src="dokumentasi/screenshot/crud_4_barang_masuk.png" alt="Form barang masuk"><br><sub><b>Transaksi Barang Masuk + Petugas</b></sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="dokumentasi/screenshot/app_6_cetak_laporan.png" alt="Tab cetak laporan"><br><sub><b>Menu Cetak Laporan</b></sub></td>
+    <td align="center"><img src="dokumentasi/screenshot/app_7_cetak_laporan.png" alt="Tab cetak laporan"><br><sub><b>Menu Cetak Laporan</b></sub></td>
     <td align="center"><img src="dokumentasi/screenshot/cetak_barang.png" alt="Hasil cetak PDF" width="300"><br><sub><b>Hasil Cetak PDF (A4 Portrait)</b></sub></td>
   </tr>
 </table>
 
 <details>
-<summary><b>Lihat laporan transaksi (A4 Landscape)</b></summary>
+<summary><b>Lihat dialog cetak browser & laporan lainnya</b></summary>
 <br>
+<img src="dokumentasi/screenshot/04_dialog_cetak_laporan_barang_masuk.png" alt="Dialog cetak Chrome laporan barang masuk">
 <img src="dokumentasi/screenshot/02_halaman_laporan_barang_masuk.png" alt="Laporan barang masuk di browser">
-<img src="dokumentasi/screenshot/cetak_barang_keluar.png" alt="Hasil cetak laporan barang keluar">
+<img src="dokumentasi/screenshot/cetak_riwayat_harga.png" alt="Hasil cetak laporan riwayat harga" width="420">
 </details>
 
 ---
@@ -102,7 +105,7 @@ Pilih salah satu cara:
 1. Buka phpMyAdmin (`http://localhost/phpmyadmin`) atau HeidiSQL (Laragon: tombol **Database**).
 2. Pilih menu **Import** / **File → Run SQL file**.
 3. Pilih file `database/db_inventaris_toko.sql`, lalu jalankan.
-4. Database `db_inventaris_toko` beserta 5 tabel dan contoh datanya akan terbentuk.
+4. Database `db_inventaris_toko` beserta 7 tabel dan contoh datanya akan terbentuk.
 
 </details>
 
@@ -130,6 +133,8 @@ private static final String PASSWORD = "";   // isi password MySQL di sini
 ### Langkah 5: Jalankan aplikasi 🎉
 
 **Windows:** klik dua kali **`run.bat`**
+
+Saat aplikasi terbuka, pilih akun yang dipakai (data contoh: **Administrator** sebagai admin, **Rina Wulandari** / **Budi Santoso** sebagai petugas). Tab *Pengguna* hanya muncul untuk admin.
 
 **Linux / macOS:**
 
@@ -166,15 +171,16 @@ Di Linux/macOS ganti `;` menjadi `:` pada classpath.
 
 ## 📖 Cara Pakai
 
-Aplikasi memiliki 6 tab:
+Aplikasi memiliki 7 tab (6 untuk petugas):
 
 | Tab | Fungsi |
 |---|---|
 | **Kategori** | Kelola kategori barang (Makanan, Minuman, ...) |
 | **Supplier** | Kelola data pemasok: nama, alamat, no. telepon |
-| **Barang** | Kelola barang: nama, kategori, stok awal, harga |
+| **Barang** | Kelola barang: nama, kategori, stok awal, harga. Perubahan harga tercatat di riwayat harga |
 | **Barang Masuk** | Catat barang datang dari supplier, **stok bertambah otomatis** |
 | **Barang Keluar** | Catat barang terjual/keluar, **stok berkurang otomatis** (ditolak bila stok kurang) |
+| **Pengguna** | Kelola akun admin/petugas *(khusus admin)* |
 | **Cetak Laporan** | Pilih laporan, lalu klik **Cetak Laporan** |
 
 ### Operasi CRUD
@@ -205,8 +211,10 @@ Laporan yang tersedia:
 | Data Kategori | `kategori` | A4 Portrait | Jumlah jenis barang & total stok per kategori |
 | Data Supplier | `supplier` | A4 Portrait | Alamat, telepon, jumlah transaksi masuk |
 | Data Barang | `barang` | A4 Portrait | Stok, harga, nilai persediaan + total |
-| Barang Masuk | `barang_masuk` | A4 Landscape | Tanggal, barang, supplier, jumlah, subtotal + total |
-| Barang Keluar | `barang_keluar` | A4 Landscape | Tanggal, barang, jumlah, subtotal + total |
+| Barang Masuk | `barang_masuk` | A4 Landscape | Tanggal, barang, supplier, petugas, jumlah, subtotal + total |
+| Barang Keluar | `barang_keluar` | A4 Landscape | Tanggal, barang, petugas, jumlah, subtotal + total |
+| Riwayat Harga | `riwayat_harga` | A4 Portrait | Harga lama, harga baru, selisih, diubah oleh |
+| Data Pengguna | `user` | A4 Portrait | Username, role, jumlah transaksi masuk/keluar |
 
 ---
 
@@ -276,6 +284,10 @@ erDiagram
     BARANG ||--o{ BARANG_MASUK : "dicatat di"
     BARANG ||--o{ BARANG_KELUAR : "dicatat di"
     SUPPLIER ||--o{ BARANG_MASUK : "memasok"
+    USER ||--o{ BARANG_MASUK : "mencatat"
+    USER ||--o{ BARANG_KELUAR : "mencatat"
+    BARANG ||--o{ RIWAYAT_HARGA : "punya"
+    USER |o--o{ RIWAYAT_HARGA : "mengubah"
 
     KATEGORI {
         int id_kategori PK
@@ -294,24 +306,41 @@ erDiagram
         int stok
         decimal harga
     }
+    USER {
+        int id_user PK
+        varchar nama_user
+        varchar username UK
+        enum role
+    }
     BARANG_MASUK {
         int id_masuk PK
         int id_barang FK
         int id_supplier FK
+        int id_user FK
         date tanggal_masuk
         int jumlah
     }
     BARANG_KELUAR {
         int id_keluar PK
         int id_barang FK
+        int id_user FK
         date tanggal_keluar
         int jumlah
+    }
+    RIWAYAT_HARGA {
+        int id_riwayat PK
+        int id_barang FK
+        int id_user FK
+        decimal harga_lama
+        decimal harga_baru
+        datetime tanggal_ubah
     }
 ```
 
 - Dinormalisasi sampai **3NF**: kategori dan supplier tidak disimpan berulang, cukup dihubungkan dengan foreign key.
 - `ON DELETE RESTRICT`: kategori/supplier/barang yang masih dipakai **tidak bisa dihapus**.
 - Harga memakai `DECIMAL(12,2)` agar nilai uang tepat.
+- **Perbaikan Pertemuan 12:** tabel `user` + `id_user` pada transaksi (siapa yang mencatat), dan tabel `riwayat_harga` (perubahan harga dari waktu ke waktu).
 
 ---
 
@@ -321,16 +350,18 @@ erDiagram
 📦 InventarisToko
 ├── 📄 run.bat / run.sh            ← jalankan aplikasi
 ├── 📂 database
-│   └── db_inventaris_toko.sql     ← struktur 5 tabel + contoh data
+│   └── db_inventaris_toko.sql     ← struktur 7 tabel + contoh data
 ├── 📂 lib
 │   └── mysql-connector-j-9.1.0.jar
 ├── 📂 src/inventaris
 │   ├── Koneksi.java               ← koneksi JDBC ke MySQL
-│   ├── MenuUtama.java             ← jendela utama (main class)
+│   ├── MenuUtama.java             ← jendela utama + pilih pengguna (main class)
+│   ├── Sesi.java                  ← pengguna yang sedang login
 │   ├── FormDasar.java             ← kerangka form CRUD
 │   ├── FormKategori.java          ┐
 │   ├── FormSupplier.java          │
 │   ├── FormBarang.java            ├ CRUD tiap tabel
+│   ├── FormUser.java              │
 │   ├── FormBarangMasuk.java       │
 │   ├── FormBarangKeluar.java      ┘
 │   ├── Stok.java                  ← transaksi & konsistensi stok
@@ -342,8 +373,9 @@ erDiagram
 │       └── LaporanGenerator.java  ← HTML + CSS + buka browser
 ├── 📂 laporan                     ← hasil laporan HTML
 └── 📂 dokumentasi
-    ├── Dokumentasi Pengujian Cetak Laporan.docx / .pdf
-    ├── 📂 pdf                     ← hasil cetak 5 laporan
+    ├── Dokumentasi Pertemuan 13 - Database dan CRUD.docx / .pdf
+    ├── Dokumentasi Pertemuan 14-15 - Cetak Laporan.docx / .pdf
+    ├── 📂 pdf                     ← hasil cetak 7 laporan
     └── 📂 screenshot
 ```
 
@@ -352,19 +384,19 @@ erDiagram
 ## ✅ Hasil Pengujian
 
 <details open>
-<summary><b>Koneksi, CRUD & konsistensi stok (13/13 berhasil)</b></summary>
+<summary><b>Koneksi, CRUD & konsistensi stok (28/28 berhasil)</b></summary>
 
-| No | Skenario | Hasil |
+Diuji otomatis dengan menjalankan **kode form asli** (mengisi input, menekan Simpan/Ubah/Hapus) lalu memeriksa database.
+
+| Tabel | Contoh skenario | Hasil |
 |---|---|---|
-| 1 | Koneksi Java ke MySQL | ✅ Terhubung ke `db_inventaris_toko` |
-| 2–5 | Create/Update kategori, supplier, barang | ✅ Data tersimpan & berubah |
-| 6 | Hapus kategori yang masih dipakai barang | ✅ Ditolak (foreign key) |
-| 7 | Barang masuk 5 unit | ✅ Stok 10 → 15 |
-| 8 | Ubah barang masuk 5 → 8 unit | ✅ Stok 18 |
-| 9 | Barang keluar 3 unit | ✅ Stok 15 |
-| 10 | Barang keluar 100 unit (melebihi stok) | ✅ Ditolak, stok tetap 15 |
-| 11–12 | Hapus transaksi keluar / masuk | ✅ Stok kembali 18 → 10 |
-| 13 | Hapus data uji | ✅ Data kembali seperti semula |
+| koneksi | Java terhubung ke `db_inventaris_toko` | ✅ 1/1 |
+| kategori | Create, Update, nama kosong ditolak, hapus kategori yang masih dipakai ditolak | ✅ 5/5 |
+| supplier | Create, Update, telepon berisi huruf ditolak | ✅ 4/4 |
+| barang | Ubah harga 45.000 → 47.500 tercatat di `riwayat_harga`, harga negatif ditolak | ✅ 5/5 |
+| user | Username ganda ditolak, pengguna yang punya transaksi / sedang login tidak bisa dihapus | ✅ 6/6 |
+| barang_masuk | Stok 10 → 15 → 18 (ubah) → 10 (hapus), petugas tercatat, tanggal salah ditolak | ✅ 4/4 |
+| barang_keluar | Stok 18 → 15, keluar 100 unit (melebihi stok) ditolak tanpa mengubah data | ✅ 3/3 |
 
 </details>
 
@@ -377,21 +409,24 @@ erDiagram
 | Barang Masuk | 6 data, 232 unit, Rp 780.000 | 6 data, 232 unit, Rp 780.000 | ✅ |
 | Barang Keluar | 6 data, 39 unit, Rp 175.500 | 6 data, 39 unit, Rp 175.500 | ✅ |
 | Kategori / Supplier | 4 / 4 data | 4 / 4 data | ✅ |
+| Riwayat Harga / Pengguna | 2 / 3 data | 2 / 3 data | ✅ |
 
 </details>
 
 <details open>
 <summary><b>Pencetakan</b></summary>
 
-- ✅ Tombol **Cetak Laporan** memanggil `window.print()`
+- ✅ Tombol **Cetak Laporan** membuka dialog cetak Chrome dengan pratinjau yang benar
 - ✅ Tombol & toolbar **tidak ikut tercetak**
 - ✅ Ukuran kertas A4 portrait (595×842 pt) & landscape (842×595 pt)
 - ✅ Warna header tabel ikut tercetak, nomor halaman tampil
-- ✅ 5 laporan berhasil disimpan sebagai PDF ([lihat folder `dokumentasi/pdf`](dokumentasi/pdf))
+- ✅ 7 laporan berhasil disimpan sebagai PDF ([lihat folder `dokumentasi/pdf`](dokumentasi/pdf))
 
 </details>
 
-📘 Dokumentasi lengkap: [**Dokumentasi Pengujian Cetak Laporan.pdf**](dokumentasi/Dokumentasi%20Pengujian%20Cetak%20Laporan.pdf)
+📘 Dokumentasi lengkap:
+- [**Dokumentasi Pertemuan 13 – Database dan CRUD.pdf**](dokumentasi/Dokumentasi%20Pertemuan%2013%20-%20Database%20dan%20CRUD.pdf)
+- [**Dokumentasi Pertemuan 14-15 – Cetak Laporan.pdf**](dokumentasi/Dokumentasi%20Pertemuan%2014-15%20-%20Cetak%20Laporan.pdf)
 
 ---
 
@@ -404,6 +439,7 @@ erDiagram
 | `Access denied for user 'root'` | Isi `PASSWORD` di `Koneksi.java` sesuai password MySQL kamu |
 | `No suitable driver found` | Pastikan file `.jar` ada di folder `lib/` dan ikut di classpath |
 | `'javac' is not recognized` | JDK belum terpasang / belum masuk PATH |
+| `Table 'db_inventaris_toko.user' doesn't exist` | Database versi lama. Impor ulang `db_inventaris_toko.sql` |
 | Warna tabel tidak tercetak | Aktifkan **Grafik latar belakang** di dialog cetak |
 | Alamat file ikut tercetak | Matikan **Header dan footer** di dialog cetak |
 

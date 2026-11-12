@@ -3,7 +3,7 @@ package inventaris.laporan;
 /** Definisi satu kolom pada tabel laporan. */
 public class Kolom {
 
-    public enum Tipe { TEKS, ANGKA, RUPIAH, TANGGAL }
+    public enum Tipe { TEKS, ANGKA, RUPIAH, TANGGAL, WAKTU }
 
     final String judul;     // teks header kolom
     final String field;     // nama kolom hasil query SQL
@@ -23,6 +23,10 @@ public class Kolom {
 
     public static Kolom tanggal(String judul, String field) {
         return new Kolom(judul, field, Tipe.TANGGAL, false);
+    }
+
+    public static Kolom waktu(String judul, String field) {
+        return new Kolom(judul, field, Tipe.WAKTU, false);
     }
 
     public static Kolom angka(String judul, String field, boolean dijumlah) {

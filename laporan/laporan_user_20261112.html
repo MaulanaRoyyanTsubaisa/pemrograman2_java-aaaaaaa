@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laporan Data Pengguna - Sistem Inventaris Toko</title>
+  <style>
+    :root { --utama: #1f3a5f; --garis: #9aa7b5; --zebra: #f3f6f9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e5e8ec; color: #1b1f24;
+           font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
+
+    /* ---------- tampilan di layar ---------- */
+    .toolbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center;
+               justify-content: space-between; gap: 16px; padding: 12px 24px;
+               background: var(--utama); color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+    .toolbar strong { display: block; font-size: 15px; }
+    .toolbar span { font-size: 12px; opacity: .85; }
+    .toolbar button { flex: none; padding: 10px 22px; border: 0; border-radius: 6px; cursor: pointer;
+                      background: #f2b134; color: #1b1f24; font-size: 14px; font-weight: bold; }
+    .toolbar button:hover { background: #ffc857; }
+    .kertas { margin: 24px auto; padding: 15mm 15mm 12mm; background: #fff;
+              box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+    .kertas.portrait  { width: 210mm; min-height: 297mm; }
+    .kertas.landscape { width: 297mm; min-height: 210mm; }
+    @media screen and (max-width: 1100px) {
+      .kertas.portrait, .kertas.landscape { width: auto; min-height: 0; margin: 12px; padding: 16px; }
+      .toolbar { flex-wrap: wrap; padding: 12px 16px; }
+      table.data { display: block; overflow-x: auto; }
+    }
+
+    /* ---------- kop laporan ---------- */
+    .kop { display: flex; align-items: center; gap: 16px; padding-bottom: 10px;
+           border-bottom: 3px double var(--utama); }
+    .logo { flex: none; width: 58px; height: 58px; border-radius: 10px; background: var(--utama);
+            color: #fff; font: bold 22px/58px Arial, sans-serif; text-align: center; }
+    .identitas h1 { margin: 0; font-size: 20px; letter-spacing: 1px; color: var(--utama); }
+    .identitas p { margin: 2px 0 0; color: #4a5562; }
+    .identitas .aplikasi { font-weight: bold; color: #1b1f24; font-size: 13px; }
+    .judul { margin: 16px 0 10px; text-align: center; font-size: 16px; letter-spacing: .5px;
+             text-decoration: underline; text-underline-offset: 4px; }
+    table.info { margin-bottom: 12px; border-collapse: collapse; }
+    table.info td { padding: 2px 6px 2px 0; vertical-align: top; }
+    table.info td:first-child { width: 95px; color: #4a5562; }
+
+    /* ---------- tabel data ---------- */
+    table.data { width: 100%; border-collapse: collapse; }
+    table.data th, table.data td { border: 1px solid var(--garis); padding: 6px 8px; text-align: left; }
+    table.data thead th { background: var(--utama); color: #fff; font-weight: bold;
+                          border-color: var(--utama); }
+    table.data tbody tr:nth-child(even) td { background: var(--zebra); }
+    table.data tfoot td { background: #dfe6ee; font-weight: bold; }
+    table.data .no { width: 34px; text-align: center; }
+    table.data .angka { text-align: right; white-space: nowrap; }
+    table.data .kosong { text-align: center; padding: 18px; color: #6b7682; font-style: italic; }
+    .catatan { margin: 6px 0 0; font-size: 10.5px; color: #4a5562; font-style: italic; }
+
+    /* ---------- tanda tangan & kaki ---------- */
+    .ttd { width: 220px; margin: 28px 0 0 auto; text-align: center; break-inside: avoid; }
+    .ttd p { margin: 0 0 4px; }
+    .ruang-ttd { height: 64px; }
+    .kaki { margin-top: 24px; padding-top: 6px; border-top: 1px solid #ccd3db;
+            font-size: 10px; color: #6b7682; text-align: center; }
+
+    /* ---------- pengaturan halaman cetak ---------- */
+    @page {
+      margin: 15mm 12mm 18mm 12mm;
+      @bottom-right { content: "Halaman " counter(page) " dari " counter(pages);
+                      font: 9px Arial, sans-serif; color: #6b7682; }
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff; font-size: 11px; }
+      .kertas, .kertas.portrait, .kertas.landscape { width: auto; min-height: 0; margin: 0;
+                                                     padding: 0; box-shadow: none; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      table.data thead { display: table-header-group; }  /* header tabel diulang tiap halaman */
+      table.data tfoot { display: table-row-group; }
+      table.data tr { break-inside: avoid; }
+      .kaki { position: static; }
+    }
+    @page { size: A4 portrait; }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar no-print">
+    <div>
+      <strong>Pratinjau Laporan</strong>
+      <span>Kertas A4 Portrait &middot; pilih <em>Simpan sebagai PDF</em> pada dialog cetak untuk menyimpan PDF.</span>
+    </div>
+    <button type="button" onclick="window.print()">&#128424; Cetak Laporan</button>
+  </div>
+
+  <main class="kertas portrait">
+    <header class="kop">
+      <div class="logo">ST</div>
+      <div class="identitas">
+        <h1>TOKO SEJAHTERA</h1>
+        <p class="aplikasi">Sistem Inventaris Toko</p>
+        <p>Aplikasi Inventaris Barang Berbasis Java dan MySQL</p>
+      </div>
+    </header>
+
+    <h2 class="judul">LAPORAN DATA PENGGUNA</h2>
+    <table class="info">
+      <tr><td>Tanggal Cetak</td><td>:</td><td>Kamis, 12 November 2026 pukul 22.35 WIB</td></tr>
+      <tr><td>Sumber Data</td><td>:</td><td>Database <b>db_inventaris_toko</b>, tabel <b>user</b></td></tr>
+      <tr><td>Jumlah Data</td><td>:</td><td>3 baris</td></tr>
+    </table>
+
+    <table class="data">
+      <thead>
+        <tr>
+          <th class="no">No</th>
+          <th>ID</th>
+          <th>Nama Pengguna</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th class="angka">Transaksi Masuk</th>
+          <th class="angka">Transaksi Keluar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="no">1</td>
+          <td>1</td>
+          <td>Administrator</td>
+          <td>admin</td>
+          <td>admin</td>
+          <td class="angka">0</td>
+          <td class="angka">0</td>
+        </tr>
+        <tr>
+          <td class="no">2</td>
+          <td>2</td>
+          <td>Rina Wulandari</td>
+          <td>rina</td>
+          <td>petugas</td>
+          <td class="angka">3</td>
+          <td class="angka">4</td>
+        </tr>
+        <tr>
+          <td class="no">3</td>
+          <td>3</td>
+          <td>Budi Santoso</td>
+          <td>budi</td>
+          <td>petugas</td>
+          <td class="angka">3</td>
+          <td class="angka">2</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">TOTAL</td>
+          <td class="angka">6</td>
+          <td class="angka">6</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <section class="ttd">
+      <p>12 November 2026</p>
+      <p>Mengetahui,<br>Kepala Gudang</p>
+      <div class="ruang-ttd"></div>
+      <p class="nama">(..............................)</p>
+    </section>
+
+    <footer class="kaki">Dokumen ini dicetak otomatis dari Sistem Inventaris Toko &middot; Kamis, 12 November 2026 pukul 22.35 WIB</footer>
+  </main>
+</body>
+</html>
